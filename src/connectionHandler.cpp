@@ -70,6 +70,17 @@ bool ConnectionHandler::getLine(std::string& line) {
 bool ConnectionHandler::sendLine(std::string& line) {
     return sendFrameAscii(line, '\n');
 }
+
+bool ConnectionHandler::sendLine(short num){//and send
+    char arr[2];
+    shortToBytes(num,arr);
+    bool result=sendBytes(arr,2);
+    if(!result) return false;
+    return sendBytes("\n",1);
+
+
+}
+
  
 bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
     char ch;
@@ -86,7 +97,8 @@ bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
     }
     return true;
 }
- 
+
+
 bool ConnectionHandler::sendFrameAscii(const std::string& frame, char delimiter) {
 	bool result=sendBytes(frame.c_str(),frame.length());
 	if(!result) return false;
@@ -100,4 +112,10 @@ void ConnectionHandler::close() {
     } catch (...) {
         std::cout << "closing failed: connection already closed" << std::endl;
     }
+}
+
+void ConnectionHandler::shortToBytes(short num, char *bytesArr) {
+    bytesArr[0] = ((num >> 8) & 0xFF);
+    bytesArr[1] = (num & 0xFF);
+
 }

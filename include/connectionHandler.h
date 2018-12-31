@@ -36,6 +36,9 @@ public:
 	// Send an ascii line from the server
     // Returns false in case connection closed before all the data is sent.
     bool sendLine(std::string& line);
+
+    //use same sig
+    bool sendLine(short num);
  
     // Get Ascii data from the server until the delimiter character
     // Returns false in case connection closed before null can be read.
@@ -47,6 +50,8 @@ public:
 	
     // Close down the connection properly.
     void close();
+
+    void shortToBytes(short num, char* bytesArr);
  
 }; //class ConnectionHandler
  
