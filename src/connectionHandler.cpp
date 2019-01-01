@@ -7,8 +7,8 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
- 
-ConnectionHandler::ConnectionHandler(string host, short port): host_(host), port_(port), io_service_(), socket_(io_service_){}
+ using namespace std;
+ConnectionHandler::ConnectionHandler(string host, short port): host_(host), port_(port), io_service_(), socket_(io_service_){opCounter=0;}
     
 ConnectionHandler::~ConnectionHandler() {
     close();
@@ -64,14 +64,85 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
 }
  
 bool ConnectionHandler::getLine(std::string& line) {
+
+
     return getFrameAscii(line, '\n');
 }
 
-bool ConnectionHandler::sendLine(std::string& line) {
-    return sendFrameAscii(line, '\n');
+bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
+    stringstream strt(line);                         //send back bool? each send has bool.needs try/catch
+    string var;
+
+    getline(strt,var,' ');
+    if(var=="LOGIN"){         //can be done better with  : ?
+        sendShort(1);
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        return true;
+    }else if(var=="REGISTER"){
+        sendShort(2);
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        return true;
+    }else if(var=="LOGOUT") {
+        sendShort(3);
+        return true;
+    }else if(var=="FOLLOW"){
+        sendShort(4);
+        getline(strt,var,' ');
+        if(var=="Follow")
+            sendFrameAscii("",'0');//no back slash for you
+          else sendFrameAscii("",'1');
+        sendFrameAscii(var,'\n');
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        return true;
+    }else if(var=="POST"){
+        sendShort(5);
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        return true;
+    }else if(var=="PM"){
+        sendShort(6);
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        return true;
+    }else if(var=="USERLIST"){
+        sendShort(7);
+        return true;
+    }else if(var=="STAT"){
+        sendShort(8);
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        return true;
+    }else if(var=="NOTIFICATION"){
+        sendShort(9);
+        getline(strt,var,' ');
+        if(var=="PM")
+            sendFrameAscii("0",'\n');
+            else sendFrameAscii("1",'\n');
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        return true;
+    }else if(var=="REGISTER"){
+        sendShort(2);
+        getline(strt,var,' ');
+        sendFrameAscii(var,'\n');
+        getline(strt,var,' ');
+        return true;
+    }
+    return false;
 }
 
-bool ConnectionHandler::sendLine(short num){//and send
+bool ConnectionHandler::sendShort(short num){
     char arr[2];
     shortToBytes(num,arr);
     bool result=sendBytes(arr,2);
@@ -83,6 +154,7 @@ bool ConnectionHandler::sendLine(short num){//and send
 
  
 bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
+
     char ch;
     // Stop when we encounter the null character. 
     // Notice that the null character is not appended to the frame string.
@@ -119,3 +191,12 @@ void ConnectionHandler::shortToBytes(short num, char *bytesArr) {
     bytesArr[1] = (num & 0xFF);
 
 }
+
+short ConnectionHandler::bytesToShort(char *bytesArr) {
+    short result = (short)((bytesArr[0] & 0xff) << 8);
+    result += (short)(bytesArr[1] & 0xff);
+    return result;
+}
+
+
+

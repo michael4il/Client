@@ -6,7 +6,7 @@ using namespace std;
 /**
 * This code assumes that the server replies the exact text the client sent it (as opposed to the practical session example)
 */
-int main (int argc, char *argv[]) {
+int main (int argc, char *argv[]) { //example 
     if (argc < 3) {
         std::cerr << "Usage: " << argv[0] << " host port" << std::endl << std::endl;
         return -1;
@@ -41,7 +41,7 @@ int main (int argc, char *argv[]) {
 		if(firstWord=="LOGIN")
         {
 		    string op="12";
-            if (!connectionHandler.sendLine((short)12)) {
+            if (!connectionHandler.sendShort((short) 12)) {
                 std::cout << "Disconnected. Exiting...\n" << std::endl;
                 break;
             }}
@@ -51,7 +51,7 @@ int main (int argc, char *argv[]) {
             std::cout << "Disconnected. Exiting...\n" << std::endl;
             break;
         }
-		// connectionHandler.sendLine(line) appends '\n' to the message. Therefor we send len+1 bytes.
+		// connectionHandler.sendShort(line) appends '\n' to the message. Therefor we send len+1 bytes.
         std::cout << "Sent " << len+1 << " bytes to server" << std::endl;
 
 

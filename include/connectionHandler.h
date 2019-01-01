@@ -12,7 +12,8 @@ private:
 	const std::string host_;
 	const short port_;
 	boost::asio::io_service io_service_;   // Provides core I/O functionality
-	tcp::socket socket_; 
+	tcp::socket socket_;
+	int opCounter;
  
 public:
     ConnectionHandler(std::string host, short port);
@@ -38,7 +39,7 @@ public:
     bool sendLine(std::string& line);
 
     //use same sig
-    bool sendLine(short num);
+    bool sendShort(short num);
  
     // Get Ascii data from the server until the delimiter character
     // Returns false in case connection closed before null can be read.
@@ -52,6 +53,8 @@ public:
     void close();
 
     void shortToBytes(short num, char* bytesArr);
+    short bytesToShort(char* bytesArr);
+
  
 }; //class ConnectionHandler
  
