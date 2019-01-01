@@ -36,6 +36,7 @@ bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
 	boost::system::error_code error;
     try {
         while (!error && bytesToRead > tmp ) {
+
 			tmp += socket_.read_some(boost::asio::buffer(bytes+tmp, bytesToRead-tmp), error);			
         }
 		if(error)
@@ -52,6 +53,7 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
 	boost::system::error_code error;
     try {
         while (!error && bytesToWrite > tmp ) {
+
 			tmp += socket_.write_some(boost::asio::buffer(bytes + tmp, bytesToWrite - tmp), error);
         }
 		if(error)
@@ -64,9 +66,28 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
 }
  
 bool ConnectionHandler::getLine(std::string& line) {
+    char firstShort[2];
+    getBytes(firstShort,2);
+    short opcode= bytesToShort(firstShort);
+    if(opcode==9)//handle notification
+    {
 
+    }
+    else{
 
-    return getFrameAscii(line, '\n');
+        char secondShort[2];
+        getBytes(secondShort,2);
+        short opcodeSecond= bytesToShort(secondShort);
+        string first,second;
+        opcodeToString(first,opcode);
+        opcodeToString(second,opcodeSecond);
+        cout<<line<<endl;
+        line.append(first+" ");
+        line.append(second);
+        //need to switch case to get string output
+    }
+
+    return true;//need to return bool
 }
 
 bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
@@ -75,14 +96,14 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
 
     getline(strt,var,' ');
     if(var=="LOGIN"){         //can be done better with  : ?
-        sendShort(1);
+        sendShort(2);
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         return true;
     }else if(var=="REGISTER"){
-        sendShort(2);
+        sendShort(1);
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         getline(strt,var,' ');
@@ -91,26 +112,32 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
     }else if(var=="LOGOUT") {
         sendShort(3);
         return true;
+
+
     }else if(var=="FOLLOW"){
         sendShort(4);
         getline(strt,var,' ');
-        if(var=="Follow")
-            sendFrameAscii("",'0');//no back slash for you
-          else sendFrameAscii("",'1');
-        sendFrameAscii(var,'\n');
+        if(var=="0")
+            sendFrameAscii("",'\n');//no back slash for you
+          else sendFrameAscii("",'1');//symbol ,not good
         getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
+        sendShort((short)stoi(var));//num of users
+
+        while(getline(strt,var,' '))
+            sendFrameAscii(var,'\n');
         return true;
+
+
     }else if(var=="POST"){
         sendShort(5);
-        getline(strt,var,' ');
+        getline(strt,var,'\n');
         sendFrameAscii(var,'\n');
         return true;
     }else if(var=="PM"){
         sendShort(6);
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
-        getline(strt,var,' ');
+        getline(strt,var,'\n');
         sendFrameAscii(var,'\n');
         return true;
     }else if(var=="USERLIST"){
@@ -121,7 +148,7 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         return true;
-    }else if(var=="NOTIFICATION"){
+    }else if(var=="NOTIFICATION"){//not needed here
         sendShort(9);
         getline(strt,var,' ');
         if(var=="PM")
@@ -132,12 +159,7 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         return true;
-    }else if(var=="REGISTER"){
-        sendShort(2);
-        getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
-        getline(strt,var,' ');
-        return true;
+
     }
     return false;
 }
@@ -197,6 +219,35 @@ short ConnectionHandler::bytesToShort(char *bytesArr) {
     result += (short)(bytesArr[1] & 0xff);
     return result;
 }
+
+bool ConnectionHandler::opcodeToString(std::string &line, short opcode) {
+    switch (opcode)  {
+        case 1:line.append("REGISTER");
+            break;
+        case 2:line.append("LOGIN");
+            break;
+        case 3:line.append("LOGOUT");
+            break;
+        case 4:line.append("FOLLOW");
+            break;
+        case 5:line.append("POST");
+            break;
+        case 6:line.append("PM");
+            break;
+        case 7:line.append("USERLIST");
+            break;
+        case 8:line.append("STAT");
+            break;
+        case 9:line.append("NOTIFICATION");
+            break;
+        case 10:line.append("ACK");
+            break;
+        case 11:line.append("ERROR");
+            break;
+    }
+    return true;
+}
+
 
 
 

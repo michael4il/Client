@@ -19,7 +19,6 @@ void SocketClient::taskJob() {
         int len = answer.length();
         answer.resize(len - 1);
         std::cout << answer << std::endl;
-
     }
 
 }

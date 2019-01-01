@@ -55,6 +55,8 @@ public:
     void shortToBytes(short num, char* bytesArr);
     short bytesToShort(char* bytesArr);
 
+    bool opcodeToString(std::string& line,short opcode);
+
  
 }; //class ConnectionHandler
  

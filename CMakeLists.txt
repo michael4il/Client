@@ -8,7 +8,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 include_directories(include)
 include_directories(src)
-add_executable(Boost_Echo_Client
+add_executable(
+        Boost_Echo_Client
         include/connectionHandler.h
         src/connectionHandler.cpp
         src/echoClient.cpp src/socketClient.cpp include/socketClient.h src/clientMain.cpp include/clientMain.h)
