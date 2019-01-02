@@ -50,21 +50,19 @@ bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
 
 bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
     int tmp = 0;
-	boost::system::error_code error;
+    boost::system::error_code error;
     try {
         while (!error && bytesToWrite > tmp ) {
-
-			tmp += socket_.write_some(boost::asio::buffer(bytes + tmp, bytesToWrite - tmp), error);
+            tmp += socket_.write_some(boost::asio::buffer(bytes + tmp, bytesToWrite - tmp), error);
         }
-		if(error)
-			throw boost::system::system_error(error);
+        if(error)
+            throw boost::system::system_error(error);
     } catch (std::exception& e) {
         std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }
     return true;
 }
- 
 bool ConnectionHandler::getLine(std::string& line) {
     char firstShort[2];
     getBytes(firstShort,2);
@@ -81,7 +79,6 @@ bool ConnectionHandler::getLine(std::string& line) {
         string first,second;
         opcodeToString(first,opcode);
         opcodeToString(second,opcodeSecond);
-        cout<<line<<endl;
         line.append(first+" ");
         line.append(second);
         //need to switch case to get string output
@@ -93,7 +90,6 @@ bool ConnectionHandler::getLine(std::string& line) {
 bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
     stringstream strt(line);                         //send back bool? each send has bool.needs try/catch
     string var;
-
     getline(strt,var,' ');
     if(var=="LOGIN"){         //can be done better with  : ?
         sendShort(2);
@@ -103,7 +99,7 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
         sendFrameAscii(var,'\n');
         return true;
     }else if(var=="REGISTER"){
-        sendShort(1);
+        sendShort((short)1);
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         getline(strt,var,' ');
@@ -112,8 +108,6 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
     }else if(var=="LOGOUT") {
         sendShort(3);
         return true;
-
-
     }else if(var=="FOLLOW"){
         sendShort(4);
         getline(strt,var,' ');
@@ -159,17 +153,18 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         return true;
-
-    }
+        }else if(var=="aa"){
+        getline(strt,var,' ');
+        sendFrameAscii("aa",'\n');
+        return true;
+        }
     return false;
 }
 
 bool ConnectionHandler::sendShort(short num){
     char arr[2];
     shortToBytes(num,arr);
-    bool result=sendBytes(arr,2);
-    if(!result) return false;
-    return sendBytes("\n",1);
+    return sendBytes(arr,2);
 
 
 }
@@ -194,9 +189,9 @@ bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
 
 
 bool ConnectionHandler::sendFrameAscii(const std::string& frame, char delimiter) {
-	bool result=sendBytes(frame.c_str(),frame.length());
-	if(!result) return false;
-	return sendBytes(&delimiter,1);
+    bool result=sendBytes(frame.c_str(),frame.length());
+    if(!result) return false;
+    return sendBytes(&delimiter,1);
 }
  
 // Close down the connection properly.

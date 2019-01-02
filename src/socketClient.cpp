@@ -10,15 +10,16 @@ SocketClient::SocketClient(ConnectionHandler& connection, bool & shouldTerminate
 }
 
 void SocketClient::taskJob() {
-    while (true) {
-        std::string answer;
-
+    std::string answer;
+    while ( !shouldTerminate ) {
         if (!this->connection.getLine(answer)) {
             break;
         }
         int len = answer.length();
-        answer.resize(len - 1);
+        answer.resize(len);
         std::cout << answer << std::endl;
+        if(answer=="ACK LOGOUT")
+            shouldTerminate=true;
     }
 
 }
