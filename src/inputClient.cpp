@@ -16,7 +16,7 @@ void inputClient::taskJob() {
         char buf[bufsize];
         std::cin.getline(buf, bufsize);
         std::string line(buf);
-        if (line != "" && !connection.sendLine(line)) {
+        if (!connection.sendLine(line)) {
             std::cout << "Disconnected. Exiting..." << std::endl;
             break;
         }

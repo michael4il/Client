@@ -64,41 +64,60 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
     return true;
 }
 bool ConnectionHandler::getLine(std::string& line) {
+    string first,second;
     char firstShort[2];
     getBytes(firstShort,2);
     short opcode= bytesToShort(firstShort);
     if(opcode==9)//handle notification
     {
+        char c;
+        getBytes(&c,1);
+        if(c=='\n')
+            line.append("PM ");
+        else
+            line.append("Public ");
+        getFrameAscii(line,'\n');
+        line.append(" ");
+        getFrameAscii(line,'\n');
+        line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());//plaster
 
-    }
-    else{
 
+    } else{
         char secondShort[2];
         getBytes(secondShort,2);
         short opcodeSecond= bytesToShort(secondShort);
-        string first,second;
         opcodeToString(first,opcode);
-        opcodeToString(second,opcodeSecond);
+        string Result;          // string which will contain the result
+        ostringstream convert;   // stream used for the conversion
+        convert << opcodeSecond;      // insert the textual representation of 'Number' in the characters in the stream
+        Result = convert.str();
         line.append(first+" ");
-        line.append(second);
+        line.append(Result);
+        switch (opcodeSecond){
+        }
+
         //need to switch case to get string output
     }
 
     return true;//need to return bool
+
 }
 
-bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
-    stringstream strt(line);                         //send back bool? each send has bool.needs try/catch
+bool ConnectionHandler::sendLine(std::string& line) {
+    stringstream strt(line);
     string var;
     getline(strt,var,' ');
-    if(var=="LOGIN"){         //can be done better with  : ?
+
+    if(var=="LOGIN"){
         sendShort(2);
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         return true;
+
     }else if(var=="REGISTER"){
+
         sendShort((short)1);
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
@@ -106,27 +125,29 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
         sendFrameAscii(var,'\n');
         return true;
     }else if(var=="LOGOUT") {
+
         sendShort(3);
         return true;
     }else if(var=="FOLLOW"){
+        //---------------------------------------------FOLLOW---------------------------------
         sendShort(4);
         getline(strt,var,' ');
         if(var=="0")
-            sendFrameAscii("",'\n');//no back slash for you
-          else sendFrameAscii("",'1');//symbol ,not good
+            sendFrameAscii("",'\n');//maybe \n \n
+          else sendFrameAscii("",'1');
         getline(strt,var,' ');
         sendShort((short)stoi(var));//num of users
-
         while(getline(strt,var,' '))
             sendFrameAscii(var,'\n');
         return true;
-
+//-------------------------------------------------------------------------------------------
 
     }else if(var=="POST"){
         sendShort(5);
         getline(strt,var,'\n');
         sendFrameAscii(var,'\n');
         return true;
+//-------------------------------------------------------------------------------------------
     }else if(var=="PM"){
         sendShort(6);
         getline(strt,var,' ');
@@ -134,6 +155,8 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
         getline(strt,var,'\n');
         sendFrameAscii(var,'\n');
         return true;
+        //-------------------------------------------------------------------------------------------
+
     }else if(var=="USERLIST"){
         sendShort(7);
         return true;
@@ -142,23 +165,12 @@ bool ConnectionHandler::sendLine(std::string& line) {//here the magic happens
         getline(strt,var,' ');
         sendFrameAscii(var,'\n');
         return true;
-    }else if(var=="NOTIFICATION"){//not needed here
-        sendShort(9);
-        getline(strt,var,' ');
-        if(var=="PM")
-            sendFrameAscii("0",'\n');
-            else sendFrameAscii("1",'\n');
-        getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
-        getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
-        return true;
-        }else if(var=="aa"){
+    }else if(var=="aa"){
         getline(strt,var,' ');
         sendFrameAscii("aa",'\n');
         return true;
         }
-    return false;
+    return true;
 }
 
 bool ConnectionHandler::sendShort(short num){

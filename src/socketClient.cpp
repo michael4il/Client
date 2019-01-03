@@ -12,6 +12,7 @@ SocketClient::SocketClient(ConnectionHandler& connection, bool & shouldTerminate
 void SocketClient::taskJob() {
     std::string answer;
     while ( !shouldTerminate ) {
+        answer.resize(0);
         if (!this->connection.getLine(answer)) {
             break;
         }
