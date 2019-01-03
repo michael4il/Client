@@ -87,9 +87,9 @@ bool ConnectionHandler::getLine(std::string& line) {
         getBytes(secondShort,2);
         short opcodeSecond= bytesToShort(secondShort);
         opcodeToString(first,opcode);
-        string Result;          // string which will contain the result
-        ostringstream convert;   // stream used for the conversion
-        convert << opcodeSecond;      // insert the textual representation of 'Number' in the characters in the stream
+        string Result;
+        ostringstream convert;
+        convert << opcodeSecond;
         Result = convert.str();
         line.append(first+" ");
         line.append(Result);
