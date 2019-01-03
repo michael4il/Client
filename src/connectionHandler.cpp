@@ -1,5 +1,5 @@
 #include <connectionHandler.h>
- 
+
 using boost::asio::ip::tcp;
 
 using std::cin;
@@ -7,22 +7,22 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
- using namespace std;
+using namespace std;
 ConnectionHandler::ConnectionHandler(string host, short port): host_(host), port_(port), io_service_(), socket_(io_service_){opCounter=0;}
-    
+
 ConnectionHandler::~ConnectionHandler() {
     close();
 }
- 
+
 bool ConnectionHandler::connect() {
-    std::cout << "Starting connect to " 
-        << host_ << ":" << port_ << std::endl;
+    std::cout << "Starting connect to "
+              << host_ << ":" << port_ << std::endl;
     try {
-		tcp::endpoint endpoint(boost::asio::ip::address::from_string(host_), port_); // the server endpoint
-		boost::system::error_code error;
-		socket_.connect(endpoint, error);
-		if (error)
-			throw boost::system::system_error(error);
+        tcp::endpoint endpoint(boost::asio::ip::address::from_string(host_), port_); // the server endpoint
+        boost::system::error_code error;
+        socket_.connect(endpoint, error);
+        if (error)
+            throw boost::system::system_error(error);
     }
     catch (std::exception& e) {
         std::cerr << "Connection failed (Error: " << e.what() << ')' << std::endl;
@@ -30,17 +30,17 @@ bool ConnectionHandler::connect() {
     }
     return true;
 }
- 
+
 bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
     size_t tmp = 0;
-	boost::system::error_code error;
+    boost::system::error_code error;
     try {
         while (!error && bytesToRead > tmp ) {
 
-			tmp += socket_.read_some(boost::asio::buffer(bytes+tmp, bytesToRead-tmp), error);			
+            tmp += socket_.read_some(boost::asio::buffer(bytes+tmp, bytesToRead-tmp), error);
         }
-		if(error)
-			throw boost::system::system_error(error);
+        if(error)
+            throw boost::system::system_error(error);
     } catch (std::exception& e) {
         std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
@@ -68,36 +68,79 @@ bool ConnectionHandler::getLine(std::string& line) {
     char firstShort[2];
     getBytes(firstShort,2);
     short opcode= bytesToShort(firstShort);
-    if(opcode==9)//handle notification
-    {
-        char c;
-        getBytes(&c,1);
-        if(c=='\n')
-            line.append("PM ");
-        else
-            line.append("Public ");
-        getFrameAscii(line,'\n');
-        line.append(" ");
-        getFrameAscii(line,'\n');
-        line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());//plaster
+    switch(opcode){
+        case 10:{//ACK
+            char secondShort[2];
+            getBytes(secondShort,2);
+            short opcodeSecond= bytesToShort(secondShort);
+            opcodeToString(first,opcode);
+            string Result;
+            ostringstream convert;
+            convert << opcodeSecond;
+            Result = convert.str();
+            line.append(first+" ");
+            line.append(Result);
+            line.append(" ");
+            switch(opcodeSecond){
+                case 4:{//----------------------------ACK FOLLOW------------------------
+                    char NumofUsers[2];
+                    getBytes(NumofUsers,2);
+                    short usersnum= bytesToShort(NumofUsers);
+                    string Result;
+                    ostringstream convert;
+                    convert << usersnum;
+                    Result = convert.str();
+                    line.append(Result);
+                    line.append(" ");
+                    for(int i=0;i<usersnum;i++) {
+                        getFrameAscii(line, '\0');
+                        line.append(" ");
+                    }
+                    line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
+                    line.resize(line.size()-1);
+                    break;
+                }
+                case 7:{
 
+                }
+            }
+            break;
+        }
+        case 11:{//ERROR
+            char secondShort[2];
+            getBytes(secondShort,2);
+            short opcodeSecond= bytesToShort(secondShort);
+            opcodeToString(first,opcode);
+            string Result;
+            ostringstream convert;
+            convert << opcodeSecond;
+            Result = convert.str();
+            line.append(first+" ");
+            line.append(Result);
+            break;
 
-    } else{
-        char secondShort[2];
-        getBytes(secondShort,2);
-        short opcodeSecond= bytesToShort(secondShort);
-        opcodeToString(first,opcode);
-        string Result;
-        ostringstream convert;
-        convert << opcodeSecond;
-        Result = convert.str();
-        line.append(first+" ");
-        line.append(Result);
-        switch (opcodeSecond){
+        }
+        case 9:{//NOTIFICATION
+            char c;
+            cout<<line<<endl;
+            getBytes(&c,1);
+            if(c=='\0')
+                line.append("PM ");
+            else
+                line.append("Public ");
+            cout<<line<<endl;
+            getFrameAscii(line,'\0');
+            cout<<line<<endl;
+            line.append(" ");
+            cout<<line<<endl;
+            getFrameAscii(line,'\0');
+
+            break;
+
         }
 
-        //need to switch case to get string output
     }
+
 
     return true;//need to return bool
 
@@ -111,21 +154,20 @@ bool ConnectionHandler::sendLine(std::string& line) {
     if(var=="LOGIN"){
         sendShort(2);
         getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
+        sendFrameAscii(var,'\0');
         getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
+        sendFrameAscii(var,'\0');
         return true;
 
     }else if(var=="REGISTER"){
 
         sendShort((short)1);
         getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
+        sendFrameAscii(var,'\0');
         getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
+        sendFrameAscii(var,'\0');
         return true;
     }else if(var=="LOGOUT") {
-
         sendShort(3);
         return true;
     }else if(var=="FOLLOW"){
@@ -133,27 +175,27 @@ bool ConnectionHandler::sendLine(std::string& line) {
         sendShort(4);
         getline(strt,var,' ');
         if(var=="0")
-            sendFrameAscii("",'\n');//maybe \n \n
-          else sendFrameAscii("",'1');
+            sendFrameAscii("",'\0');//maybe \n \n
+        else sendFrameAscii("",'1');
         getline(strt,var,' ');
         sendShort((short)stoi(var));//num of users
         while(getline(strt,var,' '))
-            sendFrameAscii(var,'\n');
+            sendFrameAscii(var,'\0');
         return true;
 //-------------------------------------------------------------------------------------------
 
     }else if(var=="POST"){
         sendShort(5);
         getline(strt,var,'\n');
-        sendFrameAscii(var,'\n');
+        sendFrameAscii(var,'\0');
         return true;
 //-------------------------------------------------------------------------------------------
     }else if(var=="PM"){
         sendShort(6);
         getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
+        sendFrameAscii(var,'\0');
         getline(strt,var,'\n');
-        sendFrameAscii(var,'\n');
+        sendFrameAscii(var,'\0');
         return true;
         //-------------------------------------------------------------------------------------------
 
@@ -163,13 +205,13 @@ bool ConnectionHandler::sendLine(std::string& line) {
     }else if(var=="STAT"){
         sendShort(8);
         getline(strt,var,' ');
-        sendFrameAscii(var,'\n');
+        sendFrameAscii(var,'\0');
         return true;
     }else if(var=="aa"){
         getline(strt,var,' ');
-        sendFrameAscii("aa",'\n');
+        sendFrameAscii("aa",'\0');
         return true;
-        }
+    }
     return true;
 }
 
@@ -181,17 +223,19 @@ bool ConnectionHandler::sendShort(short num){
 
 }
 
- 
+
 bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
 
-    char ch;
+    char ch;//1 byte
+
     // Stop when we encounter the null character. 
     // Notice that the null character is not appended to the frame string.
     try {
-		do{
-			getBytes(&ch, 1);
+        do{
+            getBytes(&ch, 1);
             frame.append(1, ch);
         }while (delimiter != ch);
+        frame.resize(frame.size()-1);
     } catch (std::exception& e) {
         std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
@@ -205,7 +249,7 @@ bool ConnectionHandler::sendFrameAscii(const std::string& frame, char delimiter)
     if(!result) return false;
     return sendBytes(&delimiter,1);
 }
- 
+
 // Close down the connection properly.
 void ConnectionHandler::close() {
     try{
@@ -254,6 +298,7 @@ bool ConnectionHandler::opcodeToString(std::string &line, short opcode) {
     }
     return true;
 }
+
 
 
 
