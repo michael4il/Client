@@ -10,9 +10,11 @@ class SocketClient {
 private:
     ConnectionHandler &connection;
     bool &shouldTerminate;
+    int& flag;
+
 public:
-    SocketClient(ConnectionHandler &connection, bool &shouldTerminate);
-    void taskJob();
+    SocketClient(ConnectionHandler &connection, bool &shouldTerminate,int& flag);
+    void run();
 };
 
 #endif //CLIENT_SOCKETCLIENT_H

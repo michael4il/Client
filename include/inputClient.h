@@ -12,9 +12,10 @@ class inputClient {
 private:
     ConnectionHandler &connection;
     bool &shouldTerminate;
+    int& flag;
 public:
-    inputClient(ConnectionHandler &connection, bool &shouldTerminate);
-    void taskJob();
+    inputClient(ConnectionHandler &connection, bool &shouldTerminate,int& flag);
+    void run();
 };
 
 

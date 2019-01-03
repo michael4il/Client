@@ -1,0 +1,46 @@
+//thread1
+LOGIN Avi
+FOLLOW 0 1 Avi
+FOLLOW 1 1 aviv
+PM Avi hey
+PM aviv sup
+USERLIST
+STAT
+//Checked if not register work.
+REGISTER Avi 123
+LOGIN JAJA
+FOLLOW 0 1 Avi
+FOLLOW 1 1 aviv
+PM Avi bye
+PM aviv inf
+USERLIST
+STAT
+
+REGISTER Moses abc
+LOGIN Avi 123
+
+//thread3
+REGISTER Shaki vvv
+LOGIN Shaki vvv
+FOLLOW 0 2 Avi jaja
+//one follow only
+
+
+PM Shaki hey <friend> my friend
+//thread2
+LOGIN Moses abc
+//We want that moses will get after
+
+//thread1
+POST hi everyone! @MOSES hello!
+
+
+REGISTER Moses abc
+REGISTER Shaki vvv
+LOGIN Shaki vvv
+
+POST hi everyone! @Moses hello!
+
+REGISTER Moses abc
+LOGIN Moses abc
+PM aviv inf

@@ -26,12 +26,12 @@ int main(int argc, char *argv[]) { //main thread send messages,socket client rec
     }
 
     bool shouldTerminate = false;
+    int flag= 1;
+    SocketClient socketClient(connectionHandler, shouldTerminate,flag);
+    inputClient  inputClient(connectionHandler,shouldTerminate,flag);
 
-    SocketClient socketClient(connectionHandler, shouldTerminate);
-    inputClient  inputClient(connectionHandler,shouldTerminate);
-
-    boost::thread th1(&SocketClient::taskJob, &socketClient);
-    boost::thread th2(&inputClient::taskJob,&inputClient);
+    boost::thread th1(&SocketClient::run, &socketClient);
+    boost::thread th2(&inputClient::run,&inputClient);
 
     th1.join();
     th2.join();

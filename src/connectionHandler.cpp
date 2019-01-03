@@ -42,7 +42,7 @@ bool ConnectionHandler::getBytes(char bytes[], unsigned int bytesToRead) {
         if(error)
             throw boost::system::system_error(error);
     } catch (std::exception& e) {
-        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
+        std::cerr << "Get Bytes recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }
     return true;
@@ -58,85 +58,67 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
         if(error)
             throw boost::system::system_error(error);
     } catch (std::exception& e) {
-        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
+        std::cerr << "Send Bytes failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }
     return true;
 }
+
 bool ConnectionHandler::getLine(std::string& line) {
     string first,second;
     char firstShort[2];
     getBytes(firstShort,2);
     short opcode= bytesToShort(firstShort);
+    opcodeToString(first,opcode);
+    line.append(first+" ");
     switch(opcode){
-        case 10:{//ACK
-            char secondShort[2];
-            getBytes(secondShort,2);
-            short opcodeSecond= bytesToShort(secondShort);
-            opcodeToString(first,opcode);
-            string Result;
-            ostringstream convert;
-            convert << opcodeSecond;
-            Result = convert.str();
-            line.append(first+" ");
-            line.append(Result);
-            line.append(" ");
-            switch(opcodeSecond){
-                case 4:{//----------------------------ACK FOLLOW------------------------
-                    char NumofUsers[2];
-                    getBytes(NumofUsers,2);
-                    short usersnum= bytesToShort(NumofUsers);
-                    string Result;
-                    ostringstream convert;
-                    convert << usersnum;
-                    Result = convert.str();
-                    line.append(Result);
-                    line.append(" ");
-                    for(int i=0;i<usersnum;i++) {
-                        getFrameAscii(line, '\0');
-                        line.append(" ");
-                    }
-                    line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
-                    line.resize(line.size()-1);
-                    break;
-                }
-                case 7:{
-
-                }
-            }
+        //------------------------------------------------ERROR--------------------------------
+        case 11:{
+            handleShort(line);
             break;
         }
-        case 11:{//ERROR
-            char secondShort[2];
-            getBytes(secondShort,2);
-            short opcodeSecond= bytesToShort(secondShort);
-            opcodeToString(first,opcode);
-            string Result;
-            ostringstream convert;
-            convert << opcodeSecond;
-            Result = convert.str();
-            line.append(first+" ");
-            line.append(Result);
-            break;
-
-        }
-        case 9:{//NOTIFICATION
+        //--------------------------------------------NOTIFICATION------------------------------------
+        case 9:{
             char c;
-            cout<<line<<endl;
             getBytes(&c,1);
             if(c=='\0')
                 line.append("PM ");
             else
                 line.append("Public ");
-            cout<<line<<endl;
             getFrameAscii(line,'\0');
-            cout<<line<<endl;
             line.append(" ");
-            cout<<line<<endl;
             getFrameAscii(line,'\0');
-
             break;
+        }
+        case 10:{
 
+            //------------------------------------------------ACK-----------------------------------------------------
+
+
+            short opcodeSecond= handleShort(line);//string updated
+
+            if(opcodeSecond== 4 || opcodeSecond==7) {
+                line.append(" ");
+                short count = handleShort(line);
+                line.append(" ");
+                for (int i = 0; i < count; i++) {
+                    getFrameAscii(line, '\0');
+                    line.append(" ");
+                }
+                line.erase(std::remove(line.begin(), line.end(), '\n'), line.end());
+                line.resize(line.size() - 1);
+            }
+            //-------------------------------------------------------------STAT-----------------
+            if(opcodeSecond==8)
+            {
+                line.append(" ");
+                handleShort(line);
+                line.append(" ");
+                handleShort(line);
+                line.append(" ");
+                handleShort(line);
+            }
+            break;
         }
 
     }
@@ -146,6 +128,7 @@ bool ConnectionHandler::getLine(std::string& line) {
 
 }
 
+//---------------------------------------------ENCODER-----------------------------------------------------------
 bool ConnectionHandler::sendLine(std::string& line) {
     stringstream strt(line);
     string var;
@@ -215,6 +198,7 @@ bool ConnectionHandler::sendLine(std::string& line) {
     return true;
 }
 
+
 bool ConnectionHandler::sendShort(short num){
     char arr[2];
     shortToBytes(num,arr);
@@ -237,7 +221,7 @@ bool ConnectionHandler::getFrameAscii(std::string& frame, char delimiter) {
         }while (delimiter != ch);
         frame.resize(frame.size()-1);
     } catch (std::exception& e) {
-        std::cerr << "recv failed (Error: " << e.what() << ')' << std::endl;
+        std::cerr << "Get Frame recv failed (Error: " << e.what() << ')' << std::endl;
         return false;
     }
     return true;
@@ -297,6 +281,18 @@ bool ConnectionHandler::opcodeToString(std::string &line, short opcode) {
             break;
     }
     return true;
+}
+
+short ConnectionHandler::handleShort(std::string &line) {
+    char bytesArr[2];
+    getBytes(bytesArr,2);
+    short value= bytesToShort(bytesArr);
+    string Result;
+    ostringstream convert;
+    convert << value;
+    Result = convert.str();
+    line.append(Result);
+    return value;
 }
 
 
