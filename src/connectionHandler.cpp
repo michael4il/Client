@@ -64,7 +64,7 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
     return true;
 }
 
-bool ConnectionHandler::getLine(std::string& line) {
+bool ConnectionHandler::getLine(std::string& line) {//DECODER
     string first,second;
     char firstShort[2];
     getBytes(firstShort,2);
@@ -257,30 +257,18 @@ short ConnectionHandler::bytesToShort(char *bytesArr) {
 
 bool ConnectionHandler::opcodeToString(std::string &line, short opcode) {
     switch (opcode)  {
-        case 1:line.append("REGISTER");
-            break;
-        case 2:line.append("LOGIN");
-            break;
-        case 3:line.append("LOGOUT");
-            break;
-        case 4:line.append("FOLLOW");
-            break;
-        case 5:line.append("POST");
-            break;
-        case 6:line.append("PM");
-            break;
-        case 7:line.append("USERLIST");
-            break;
-        case 8:line.append("STAT");
-            break;
-        case 9:line.append("NOTIFICATION");
-            break;
-        case 10:line.append("ACK");
-            break;
-        case 11:line.append("ERROR");
-            break;
-    }
-    return true;
+        case 1:line.append("REGISTER");break;
+        case 2:line.append("LOGIN");break;
+        case 3:line.append("LOGOUT");break;
+        case 4:line.append("FOLLOW");break;
+        case 5:line.append("POST");break;
+        case 6:line.append("PM");break;
+        case 7:line.append("USERLIST");break;
+        case 8:line.append("STAT");break;
+        case 9:line.append("NOTIFICATION");break;
+        case 10:line.append("ACK");break;
+        case 11:line.append("ERROR");break; }
+        return true;
 }
 
 short ConnectionHandler::handleShort(std::string &line) {
