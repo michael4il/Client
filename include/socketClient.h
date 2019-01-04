@@ -6,14 +6,14 @@
 
 #include "connectionHandler.h"
 
-class SocketClient {
+class socketClient {
 private:
     ConnectionHandler &connection;
     bool &shouldTerminate;
     int& flag;
 
 public:
-    SocketClient(ConnectionHandler &connection, bool &shouldTerminate,int& flag);
+    socketClient(ConnectionHandler &connection, bool &shouldTerminate,int& flag);
     void run();
 };
 

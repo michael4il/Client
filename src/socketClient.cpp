@@ -6,10 +6,10 @@
 
 using namespace std;
 
-SocketClient::SocketClient(ConnectionHandler& connection, bool & shouldTerminate,int& flag) : connection(connection), shouldTerminate(shouldTerminate) , flag(flag){
+socketClient::socketClient(ConnectionHandler& connection, bool & shouldTerminate,int& flag) : connection(connection), shouldTerminate(shouldTerminate) , flag(flag){
 }
 
-void SocketClient::run() {
+void socketClient::run() {
     std::string answer;
     while ( !shouldTerminate ) {
         answer.resize(0);
