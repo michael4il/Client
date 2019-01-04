@@ -97,7 +97,6 @@ bool ConnectionHandler::getLine(std::string& line) {
 
 
             short opcodeSecond= handleShort(line);//string updated
-
             if(opcodeSecond== 4 || opcodeSecond==7) {
                 line.append(" ");
                 short count = handleShort(line);

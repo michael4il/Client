@@ -19,7 +19,7 @@ add_executable(
         Boost_Echo_Client
         include/connectionHandler.h
         src/connectionHandler.cpp
-        src/Client.cpp
+        src/BGSClient.cpp
         src/socketClient.cpp
         include/socketClient.h
         makefile src/inputClient.cpp include/inputClient.h)
