@@ -19,8 +19,9 @@ void inputClient::run() {
         while(flag==0){}
         if(flag==-1)
             break;
-        std::cin.getline(buf, bufsize);
+        std::cin.getline(buf, bufsize);//keyboard input
         std::string line(buf);
+
         if(line=="LOGOUT")
             flag=0;
         if (!connection.sendLine(line)) {

@@ -2,7 +2,7 @@
 -------------------------Moses-----------------
 REGISTER Moses abc
 LOGIN Moses abc
-PM aviv inf
+PM Shaki inf
 FOLLOW 0 1 Avi
 FOLLOW 1 1 aviv
 
@@ -23,4 +23,16 @@ LOGIN Avi 123
 USERLIST
 STAT Avi
 PM Avi hey
+---------------------------REGISTER-----------------
+REGISTER Moses abc
+REGISTER ava abc
+REGISTER ve abc
+REGISTER uj abc
+REGISTER 6kr abc
+
+FOLLOW 0 5 Moses ava ve uj 6kr
+FOLLOW 1 2 uj 6kr
+
+FOLLOW 0 1 Avi
+
 

@@ -54,6 +54,7 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
     try {
         while (!error && bytesToWrite > tmp ) {
             tmp += socket_.write_some(boost::asio::buffer(bytes + tmp, bytesToWrite - tmp), error);
+
         }
         if(error)
             throw boost::system::system_error(error);
@@ -63,14 +64,14 @@ bool ConnectionHandler::sendBytes(const char bytes[], int bytesToWrite) {
     }
     return true;
 }
-
-bool ConnectionHandler::getLine(std::string& line) {//DECODER
+//-------------------------------------------------------------DECODER--------------------------------
+bool ConnectionHandler::getLine(std::string& line) {
     string first,second;
     char firstShort[2];
     getBytes(firstShort,2);
     short opcode= bytesToShort(firstShort);
     opcodeToString(first,opcode);
-    line.append(first+" ");
+    line.append(first+" ");// first is string
     switch(opcode){
         //------------------------------------------------ERROR--------------------------------
         case 11:{
@@ -127,6 +128,8 @@ bool ConnectionHandler::getLine(std::string& line) {//DECODER
     return true;//need to return bool
 
 }
+
+
 
 //---------------------------------------------ENCODER-----------------------------------------------------------
 bool ConnectionHandler::sendLine(std::string& line) {

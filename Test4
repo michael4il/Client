@@ -1,0 +1,52 @@
+REGISTER Morty a123
+REGISTER Rick pain
+REGISTER Bird-person Gubba
+
+//Morty
+LOGIN Morty a123
+FOLLOW 0 1 Rick
+FOLLOW 0 3 Bird-person who are
+
+//Rick
+LOGIN Rick pain
+FOLLOW 0 1 Bird-person
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+//Morty
+PM Rick should ok with rick
+PM Morty should ok with me
+PM Bird-person should error
+PM Rick should ok with rick2
+STAT Morty
+(Ack 8 0 0 2)
+
+//Rick
+LOGOUT
+
+//Morty
+PM Rick should error with rick
+POST no one hears
+POST @Bird-person hey birda
+
+//Rick
+LOGIN Rick pain
+POST post1
+POST post2
+POST post3
+POST post4
+PM Rick hey me
+PM Morty hello morty!
+
+//Bird-person
+LOGIN Bird-person Gubba
+(NOTIFICATION Morty @Bird-person hey birda)
+POST everybody will hear it immediately
+PM Rick hey rick it is birdp
+LOGOUT
+
+//Rick
+LOGOUT
+
+//Morty
+LOGOUT
